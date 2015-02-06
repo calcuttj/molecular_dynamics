@@ -6,20 +6,20 @@ Program lattice
   Implicit None
   real temp
   real mass
-  integer unit_cells,N,counter
+  integer cell_dim,N,counter
   real :: r
   real, allocatable :: pos(:,:)
   real, allocatable :: vel(:,:)
   real, allocatable :: force(:,:)
   temp = 1
   mass = 1
-  unit_cells = 2
-  N = 4*unit_cells**3
+  cell_dim = 2
+  N = 4*cell_dim**3
   allocate( pos(N,3) )
   allocate( vel(N,3) )
   allocate( force(N,3) )
   call init_random_seed()
-  call position_initializer(N,unit_cells,pos)
+  call position_initializer(N,cell_dim,pos)
   do counter=1,N
      print *,counter, pos(counter,1),pos(counter,2),pos(counter,3)
   end do
