@@ -6,23 +6,23 @@ Program lattice
   real(8):: mass
   integer ::cell_dim,N,counter
   real(8), allocatable :: pos(:,:)
-  real(8), allocatable :: vel(:,:)
+  real(8), allocatable :: momenta(:,:)
 
   temp = 1d0
   mass = 1d0
   cell_dim = 2
   N = 4*cell_dim**3
   allocate( pos(N,3) )
-  allocate( vel(N,3) )
+  allocate( momenta(N,3) )
 
   call init_random_seed()
   call position_initializer(N,cell_dim,pos)
   do counter=1,N
      print *,counter, pos(counter,1),pos(counter,2),pos(counter,3)
   end do
-  call velocity_initializer(temp,N,mass,vel)
+  call momentum_initializer(temp,N,mass,momenta)
   do counter=1,N
-     print *,counter, vel(counter,1),vel(counter,2),vel(counter,3)
+     print *,counter, momenta(counter,1),momenta(counter,2),momenta(counter,3)
   end do
 end program
 
@@ -99,11 +99,11 @@ subroutine position_initializer(N,dim_cells,position)
   return
 end subroutine position_initializer
 
-subroutine velocity_initializer(temp, N, mass,velocity)
+subroutine momentum_initializer(temp, N, mass,momentum)
   real(8) :: temp, mass, stand_dev, kb
   integer :: N, counter
   real(8) :: p_x, p_y, p_z
-  real(8), intent(out), dimension(N,3) :: velocity
+  real(8), intent(out), dimension(N,3) :: momentum
   kb = 1d0
   p_x = 0d0
   p_y = 0d0
@@ -112,37 +112,37 @@ subroutine velocity_initializer(temp, N, mass,velocity)
   !---------------------------------------------------------------
   !initializing velocities of particles according to a Gaussian distribution
   do counter =1,N
-     call get_gaussian_velocity(stand_dev,velocity(counter,1))
-     call get_gaussian_velocity(stand_dev,velocity(counter,2))
-     call get_gaussian_velocity(stand_dev,velocity(counter,3))
+     call get_gaussian_momentum(mass,stand_dev,momentum(counter,1))
+     call get_gaussian_momentum(mass,stand_dev,momentum(counter,2))
+     call get_gaussian_momentum(mass,stand_dev,momentum(counter,3))
   end do
   !---------------------------------------------------------------
   !---------------------------------------------------------------
   !finds total momentum in each direction and reduces to get closer to 0
   do counter=1,N
-     p_x = p_x + velocity(counter,1)
-     p_y = p_y + velocity(counter,2)
-     p_z = p_z + velocity(counter,3)
+     p_x = p_x + momentum(counter,1)
+     p_y = p_y + momentum(counter,2)
+     p_z = p_z + momentum(counter,3)
   end do
-  velocity(:,1) = velocity(:,1) - p_x/N
-  velocity(:,2) = velocity(:,2) - p_y/N
-  velocity(:,3) = velocity(:,3) - p_z/N
+  momentum(:,1) = momentum(:,1) - p_x/N
+  momentum(:,2) = momentum(:,2) - p_y/N
+  momentum(:,3) = momentum(:,3) - p_z/N
   p_x =0d0
   p_y = 0d0
   p_z = 0d0
   do counter=1,N
-     p_x = p_x + velocity(counter,1)
-     p_y = p_y + velocity(counter,2)
-     p_z = p_z + velocity(counter,3)
+     p_x = p_x + momentum(counter,1)
+     p_y = p_y + momentum(counter,2)
+     p_z = p_z + momentum(counter,3)
   end do
   print *,p_x,p_y,p_z
   !---------------------------------------------------------------
   return
-end subroutine velocity_initializer
+end subroutine momentum_initializer
 
-subroutine get_gaussian_velocity(stand_dev,x)
+subroutine get_gaussian_momentum(mass,stand_dev,x)
 
-  real(8), intent(in) :: stand_dev
+  real(8), intent(in) :: stand_dev, mass
   real(8), intent(out) :: x
 
 
@@ -162,7 +162,7 @@ subroutine get_gaussian_velocity(stand_dev,x)
      do while (x_integ < 10d0*stand_dev)
         I = I + prefactor*exp(-x_integ*x_integ/(2d0*stand_dev*stand_dev))*dx
         if (I > random_1) then
-           x = x_integ
+           x = x_integ*mass
            exit
         else
            x_integ = x_integ + dx
@@ -176,4 +176,4 @@ subroutine get_gaussian_velocity(stand_dev,x)
         check = 1
      end if
   end do
-end subroutine get_gaussian_velocity
+end subroutine get_gaussian_momentum
