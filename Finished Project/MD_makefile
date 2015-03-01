@@ -1,0 +1,2 @@
+all:
+	gfortran molec_dynam.f90 -o Molec_Dynam
